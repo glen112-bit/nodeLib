@@ -1,19 +1,28 @@
 import chalk from "chalk";
 import fs from 'fs';
 import takeFile from "./index.js";
+import listaValidada from "./http.validacion.js";
 
 const camino = process.argv;
 
-function imprimeLista(resultado, identificador = ''){
+function imprimeLista(valida, resultado, identificador = ''){
+if (valida){
   console.log(
-    chalk.yellow('lista de:'),
+    chalk.yellow('lista validada'),
     chalk.black.bgGreen(identificador),
-    resultado
+    listaValidada(resultado)
   )
+}else{
+  console.log(
+      chalk.yellow('lista de links: '),
+      chalk.black.bgGreen(identificador),
+      resultado);
+  }
 }
 
 async function textProcess(argumentos){
-   const camino = argumentos[2];
+  const camino = argumentos[2];
+  const valida = argumentos[3] === '--valida'
   try{
     fs.lstatSync(camino)
   } catch(error){
@@ -26,14 +35,14 @@ async function textProcess(argumentos){
   if(fs.lstatSync(camino).isFile()){
 
     const resultado = await takeFile(argumentos[2]);
-    imprimeLista(resultado)
+    imprimeLista(valida, resultado)
 
   }else if(fs.lstatSync(camino).isDirectory()){
 
     const archivos = await fs.promises.readdir(camino)
     archivos.forEach(async(archivo) => {
       const lista = await takeFile(`${camino}/${archivo}`)
-      imprimeLista(lista, archivo)
+      imprimeLista(valida, lista, archivo)
     })
   }
 }
